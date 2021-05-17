@@ -1,0 +1,71 @@
+.x-gridcell .cmp-id {
+  font-family: monospace;
+}
+.x-gridcell .cmp-name {
+  color: var(--base-color);
+  font-size: 0.8em;
+  display: block;
+  font-family: monospace;
+}
+.display-values pre {
+  white-space: break-spaces;
+  word-break: break-all;
+}
+.display-values a {
+  font-family: monospace;
+}
+.x-paneltitle .x-text-el,
+.x-toast-text .x-innerhtml {
+  font-weight: 100;
+}
+.ext {
+  font-family: ExtJS !important;
+}
+a {
+  color: var(--base-color);
+}
+.x-button-logo .x-text-el {
+  color: var(--base-color);
+  font-variant: petite-caps;
+  font-style: italic;
+  font-weight: 100;
+  text-transform: none;
+}
+.x-button-logo .x-inner-el {
+  padding: 8px !important;
+}
+
+.vm-badge {
+  background: var(--alert-color);
+  color: var(--reverse-color);
+  display: inline-block;
+  padding: 2px 3px;
+  border-radius: 3px;
+  font-style: italic;
+  line-height: 1;
+  font-size: 9px;
+}
+.x-dialogheader-help .x-text-el {
+  font-size: 20px;
+  font-style: italic;
+}
+.x-actionsheet-component-details pre {
+  margin: 0
+}
+
+.x-actionsheet-component-details .detail-expander,
+.x-actionsheet-component-details .toggle-expander {
+  float: left;
+  background: var(--alert-color);
+  color: var(--reverse-color);
+  padding: 2px 3px;
+  border-radius: 3px;
+  cursor: pointer;
+  margin-right: 2px;
+}
+.x-actionsheet-component-details .toggle-expander {
+  background: var(--base-color);
+}
+.x-toolbar-main .x-container-main-body-el {
+  padding: 8px;
+}
