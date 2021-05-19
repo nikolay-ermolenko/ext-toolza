@@ -1,4 +1,6 @@
 class ComponentLocator {
+  LEVEL_LIMIT = 4;
+
   constructor(element) {
     var targetComponent = Ext.Component.fromElement(element);
     var componentStore = [];
@@ -19,9 +21,12 @@ class ComponentLocator {
       id: component.getId(),
       className: component.$className,
       hasVM: !!component.getViewModel(),
-      hasRecord: component.isXType('gridrow') && !!component.getRecord(),
+      hasRecord: component.isXType("gridrow") && !!component.getRecord(),
       record: JSON.stringify(
-        this.stringify(component.isXType('gridrow') ? component.getRecord() : null, component),
+        this.stringify(
+          component.isXType("gridrow") ? component.getRecord() : null,
+          component
+        ),
         null,
         2
       ),
@@ -87,162 +92,49 @@ class ComponentLocator {
     return "undefined";
   }
 
-  stringify(val, cmp, key) {
+  stringify(val, cmp, key, level = 0) {
     if (val === null) return val;
     if (val === undefined) return "undefined";
     if (Ext.isPrimitive(val)) return Ext.htmlEncode(val);
-    if (Ext.isArray(val)) return val.map((i) => this.stringify(i, cmp));
-    if (Ext.isFunction(val)) return "[Function]";
+    if (Ext.isArray(val)) {
+      if (level > this.LEVEL_LIMIT) return "[[Array]]";
+
+      return val.map((i) => this.stringify(i, cmp, undefined, level + 1));
+    }
+    if (Ext.isFunction(val)) return "[[Function]]";
+
     if (Ext.isObject(val)) {
-      if (val.isBinding || val.$className === 'Ext.app.bind.Binding') {
+      if (level > this.LEVEL_LIMIT) return "[[Object]]";
+
+      if (val.isBinding || val.$className === "Ext.app.bind.Binding") {
         return {
           path: this.getBindPath(val, cmp, key),
-          value: this.stringify(val.getRawValue(), cmp),
+          value: this.stringify(val.getRawValue(), cmp, level + 1),
         };
       }
-
       if (val.isViewModel) {
         return {
-          data: this.stringify(val.getData(), cmp, key),
-          formulas: this.stringify(val.getFormulas(), cmp),
+          data: this.stringify(val.getData(), cmp, key, level + 1),
+          formulas: this.stringify(val.getFormulas(), cmp, key, level + 1),
         };
       }
 
       if (val.isModel) {
-        return this.stringify(val.data, cmp, key);
+        return this.stringify(val.data, cmp, key, level + 1);
       }
 
       if (val.isSession || val.isInstance) {
-        return this.stringify(val.initialConfig, cmp, key);
+        return this.stringify(val.initialConfig, cmp, key, level + 1);
       }
 
       var res = {};
       Ext.Object.getKeys(val || {}).map((k) => {
-        if (["$initParent"].includes(k)) return;
-        res[k] = this.stringify(val[k], cmp, k);
+        res[k] = this.stringify(val[k], cmp, k, level + 1);
       });
 
       return res;
     }
 
-    if (Ext.isFunction(val.toString)) return val.toString();
     return Ext.toString(val);
   }
-
-  // zzz(obj, xtypesChain = []) {
-  //   if (obj === undefined) return obj;
-
-  //   if (Ext.isPrimitive(obj)) return obj;
-
-  //   if (Ext.isArray(obj)) {
-  //     return obj.map((i) => this.zzz(i));
-  //   }
-
-  //   if (Ext.isObject(obj)) {
-  //     if (obj.isStore) {
-  //       return this.zzz(obj.initialConfig);
-  //     }
-  //     var res = {};
-
-  //     Ext.Object.getKeys(obj || {}).map((k) => {
-  //       if (k === "grid" && ["gridrow"].includes(obj.xtype)) return;
-  //       if (
-  //         [
-  //           "$initParent",
-  //           "ownerGrid",
-  //           "headerCt",
-  //           "panel",
-  //           "ownerCmp",
-  //         ].includes(k)
-  //       )
-  //         return;
-
-  //       if (obj[k] === undefined) {
-  //         res[k] = "undefined";
-  //         return;
-  //       }
-
-  //       if (Ext.isString(obj[k])) {
-  //         res[k] = Ext.htmlEncode(obj[k]);
-  //         return;
-  //       }
-
-  //       if (Ext.isPrimitive(obj[k])) {
-  //         res[k] = obj[k];
-  //         return;
-  //       }
-
-  //       if (Ext.isArray(obj[k])) {
-  //         res[k] = this.zzz(obj[k]);
-  //         return;
-  //       }
-  //       // if (Ext.isObject(obj[k]) && obj[k].isModel) {
-  //       //  debugger
-  //       // }
-  //       if (Ext.isObject(obj[k]) && obj[k].isSession) {
-  //         res[k] = this.zzz(obj[k].initialConfig);
-  //         return;
-  //       }
-
-  //       if (Ext.isObject(obj[k]) && obj[k].isModel) {
-  //         res[k] = this.zzz(obj[k].data);
-  //         return;
-  //       }
-  //       if (Ext.isObject(obj[k]) && obj[k].isInstance) {
-  //         res[k] = this.zzz(obj[k].initialConfig);
-  //         return;
-  //       }
-
-  //       if (Ext.isObject(obj[k])) {
-  //         res[k] = this.zzz(obj[k]);
-  //         return;
-  //       }
-  //     });
-
-  //     return res;
-  //   }
-
-  //   console.log("AAA", obj);
-
-  //   //   var res = {};
-
-  //   //   Ext.Object.getKeys(obj || {}).map((k) => {
-  //   //     // console.log(k);
-  //   //     if (Ext.isPrimitive(obj[k])) {
-  //   // // debugger
-  //   //       res[k] = Ext.htmlEncode(obj[k]);
-  //   //       return;
-  //   //     }
-
-  //   //     if (Ext.isArray(obj[k])) {
-  //   //       // debugger
-  //   //       console.log('ARRAY',obj[k] );
-  //   //       res[k] = [this.zzz(res[k][0])]'array'//obj[k].map((v) => this.zzz(v));
-  //   //       return;
-  //   //     }
-
-  //   //     if (obj[k].isSession) {
-  //   //       res[k] = Ext.clone(this.zzz(obj[k].initialConfig));
-  //   //       return;
-  //   //     }
-
-  //   //     if (obj[k].isModel) {
-  //   //       console.log("MODEL", obj[k].getData());
-  //   //       res[k] = {data: obj[k].getData()}
-
-  //   //     //   // {data: Ext.clone(this.zzz(Ext.clone(obj[k].getData())))};
-  //   //       return;
-  //   //     }
-
-  //   //     // if (obj[k].isInstance) {
-  //   //     //   console.log("INSTANCE", obj, k);
-  //   //     //   res[k] = obj[k].$className;
-  //   //     //   return;
-  //   //     // }
-
-  //   //     res[k] = k;
-  //   //     // res[k] = Ext.clone(this.zzz(obj[k]));
-  //   //   });
-  //   //   return res;
-  // }
 }
