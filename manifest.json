@@ -1,9 +1,9 @@
 {
-  "description": "",
+  "description": "ExtJS component navigator. This extension allows quickly find and inspect ExtJS component via inspecting DOM",
   "devtools_page": "devtools.html",
   "icons": {},
   "manifest_version": 2,
   "name": "ExtJS Toolza",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'"
 }
